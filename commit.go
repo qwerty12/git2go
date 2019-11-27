@@ -9,6 +9,7 @@ import "C"
 
 import (
 	"runtime"
+	"time"
 	"unsafe"
 )
 
@@ -98,6 +99,14 @@ func (c *Commit) WithSignature(signature string, signatureField string) (*Oid, e
 		signature,
 		signatureField,
 	)
+}
+
+func (c *Commit) Time() time.Time {
+	timestamp := C.git_commit_time(c.cast_ptr)
+	offset := C.git_commit_time_offset(c.cast_ptr)
+	runtime.KeepAlive(c)
+	loc := time.FixedZone("", int(offset)*60)
+	return time.Unix(int64(timestamp), 0).In(loc)
 }
 
 func (c *Commit) ExtractSignature() (string, string, error) {
