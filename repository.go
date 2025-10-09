@@ -68,6 +68,9 @@ func OpenRepository(path string) (*Repository, error) {
 	var ptr *C.git_repository
 	ret := C.git_repository_open(&ptr, cpath)
 	if ret < 0 {
+		if ptr != nil {
+			C.git_repository_free(ptr)
+		}
 		return nil, MakeGitError(ret)
 	}
 
@@ -100,6 +103,9 @@ func OpenRepositoryExtended(path string, flags RepositoryOpenFlag, ceiling strin
 	var ptr *C.git_repository
 	ret := C.git_repository_open_ext(&ptr, cpath, C.uint(flags), cceiling)
 	if ret < 0 {
+		if ptr != nil {
+			C.git_repository_free(ptr)
+		}
 		return nil, MakeGitError(ret)
 	}
 
@@ -116,6 +122,9 @@ func InitRepository(path string, isbare bool) (*Repository, error) {
 	var ptr *C.git_repository
 	ret := C.git_repository_init(&ptr, cpath, ucbool(isbare))
 	if ret < 0 {
+		if ptr != nil {
+			C.git_repository_free(ptr)
+		}
 		return nil, MakeGitError(ret)
 	}
 
@@ -130,6 +139,9 @@ func NewRepositoryWrapOdb(odb *Odb) (repo *Repository, err error) {
 	ret := C.git_repository_wrap_odb(&ptr, odb.ptr)
 	runtime.KeepAlive(odb)
 	if ret < 0 {
+		if ptr != nil {
+			C.git_repository_free(ptr)
+		}
 		return nil, MakeGitError(ret)
 	}
 
@@ -144,6 +156,7 @@ func (v *Repository) SetRefdb(refdb *Refdb) {
 func (v *Repository) Free() {
 	ptr := v.ptr
 	v.ptr = nil
+
 	runtime.SetFinalizer(v, nil)
 	v.Remotes.Free()
 	if v.weak {
