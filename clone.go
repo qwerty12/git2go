@@ -32,7 +32,8 @@ func Clone(url string, path string, options *CloneOptions) (*Repository, error) 
 	cOptions := populateCloneOptions(&C.git_clone_options{}, options, &err)
 	defer freeCloneOptions(cOptions)
 
-	if len(options.CheckoutBranch) != 0 {
+	// Only set checkout_branch when options is non-nil and a branch is specified
+	if options != nil && len(options.CheckoutBranch) != 0 {
 		cOptions.checkout_branch = C.CString(options.CheckoutBranch)
 	}
 
@@ -42,10 +43,17 @@ func Clone(url string, path string, options *CloneOptions) (*Repository, error) 
 	var ptr *C.git_repository
 	ret := C.git_clone(&ptr, curl, cpath, cOptions)
 
+	// On error, ensure any partially-initialized repository is released.
 	if ret == C.int(ErrorCodeUser) && err != nil {
+		if ptr != nil {
+			C.git_repository_free(ptr)
+		}
 		return nil, err
 	}
 	if ret < 0 {
+		if ptr != nil {
+			C.git_repository_free(ptr)
+		}
 		return nil, MakeGitError(ret)
 	}
 
