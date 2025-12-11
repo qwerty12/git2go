@@ -1,6 +1,7 @@
 #include "_cgo_export.h"
 
 #include <git2.h>
+#include <git2/sys/errors.h>
 #include <git2/sys/odb_backend.h>
 #include <git2/sys/refdb_backend.h>
 #include <git2/sys/cred.h>

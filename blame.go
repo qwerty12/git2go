@@ -92,14 +92,14 @@ type Blame struct {
 }
 
 func (blame *Blame) HunkCount() int {
-	ret := int(C.git_blame_get_hunk_count(blame.ptr))
+	ret := int(C.git_blame_hunkcount(blame.ptr))
 	runtime.KeepAlive(blame)
 
 	return ret
 }
 
 func (blame *Blame) HunkByIndex(index int) (BlameHunk, error) {
-	ptr := C.git_blame_get_hunk_byindex(blame.ptr, C.uint32_t(index))
+	ptr := C.git_blame_hunk_byindex(blame.ptr, C.size_t(index))
 	runtime.KeepAlive(blame)
 	if ptr == nil {
 		return BlameHunk{}, ErrInvalid
@@ -108,7 +108,7 @@ func (blame *Blame) HunkByIndex(index int) (BlameHunk, error) {
 }
 
 func (blame *Blame) HunkByLine(lineno int) (BlameHunk, error) {
-	ptr := C.git_blame_get_hunk_byline(blame.ptr, C.size_t(lineno))
+	ptr := C.git_blame_hunk_byline(blame.ptr, C.size_t(lineno))
 	runtime.KeepAlive(blame)
 	if ptr == nil {
 		return BlameHunk{}, ErrInvalid
