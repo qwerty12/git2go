@@ -47,8 +47,10 @@ func (c *NoteCollection) Create(
 	cnote := C.CString(note)
 	defer C.free(unsafe.Pointer(cnote))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_note_create(
 		oid.toC(), c.repo.ptr, cref, authorSig,
@@ -71,8 +73,10 @@ func (c *NoteCollection) Read(ref string, id *Oid) (*Note, error) {
 		defer C.free(unsafe.Pointer(cref))
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_note
 	ret := C.git_note_read(&ptr, c.repo.ptr, cref, id.toC())
@@ -107,8 +111,10 @@ func (c *NoteCollection) Remove(ref string, author, committer *Signature, id *Oi
 	}
 	defer C.git_signature_free(committerSig)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_note_remove(c.repo.ptr, cref, authorSig, committerSig, id.toC())
 	runtime.KeepAlive(c)
@@ -123,8 +129,10 @@ func (c *NoteCollection) Remove(ref string, author, committer *Signature, id *Oi
 func (c *NoteCollection) DefaultRef() (string, error) {
 	buf := C.git_buf{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_note_default_ref(&buf, c.repo.ptr)
 	runtime.KeepAlive(c)
@@ -208,8 +216,10 @@ func (repo *Repository) NewNoteIterator(ref string) (*NoteIterator, error) {
 
 	var ptr *C.git_note_iterator
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_note_iterator_new(&ptr, repo.ptr, cref)
 	runtime.KeepAlive(repo)
@@ -233,8 +243,10 @@ func (v *NoteIterator) Free() {
 func (it *NoteIterator) Next() (noteId, annotatedId *Oid, err error) {
 	noteId, annotatedId = new(Oid), new(Oid)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_note_next(noteId.toC(), annotatedId.toC(), it.ptr)
 	runtime.KeepAlive(noteId)

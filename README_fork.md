@@ -38,6 +38,11 @@ Before using git2go's methods, your application must call once:
 git.InitLibGit2(&git.InitOptions{})
 ```
 
+### `runtime.LockOSThread()` calls in wrapper removed if libgit2 is non-threadsafe
+
+If the libgit2 git2go is using is built with `USE_THREADS=OFF` (i.e. a non-threadsafe build),
+then the wrappers in git2go won't call `LockOSThread()` for you. You should do this yourself.
+
 ---
 
 # Building libgit2 on MSYS2 CLANG64

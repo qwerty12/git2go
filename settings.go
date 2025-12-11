@@ -43,8 +43,10 @@ func SearchPath(level ConfigLevel) (string, error) {
 	var buf C.git_buf
 	defer C.git_buf_dispose(&buf)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C._go_git_opts_get_search_path(C.int(level), &buf)
 	if err < 0 {
@@ -58,8 +60,10 @@ func SetSearchPath(level ConfigLevel, path string) error {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C._go_git_opts_set_search_path(C.int(level), cpath)
 	if err < 0 {
@@ -123,8 +127,10 @@ func SetCacheMaxSize(maxSize int) error {
 }
 
 func SetCacheObjectLimit(objectType ObjectType, size int) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C._go_git_opts_set_cache_object_limit(C.git_object_t(objectType), C.size_t(size))
 	if err < 0 {
@@ -135,8 +141,10 @@ func SetCacheObjectLimit(objectType ObjectType, size int) error {
 }
 
 func getSizet(opt C.int) (int, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var val C.size_t
 	err := C._go_git_opts_get_size_t(opt, &val)
@@ -148,8 +156,10 @@ func getSizet(opt C.int) (int, error) {
 }
 
 func getSizetSizet(opt C.int) (int, int, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var val1, val2 C.size_t
 	err := C._go_git_opts_get_size_t_size_t(opt, &val1, &val2)
@@ -161,8 +171,10 @@ func getSizetSizet(opt C.int) (int, int, error) {
 }
 
 func setSizet(opt C.int, val int) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cval := C.size_t(val)
 	err := C._go_git_opts_set_size_t(opt, cval)

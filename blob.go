@@ -47,8 +47,10 @@ func (v *Blob) IsBinary() bool {
 }
 
 func (repo *Repository) CreateBlobFromBuffer(data []byte) (*Oid, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var id C.git_oid
 	var size C.size_t
@@ -85,8 +87,10 @@ func (repo *Repository) CreateFromStream(hintPath string) (*BlobWriteStream, err
 		defer C.free(unsafe.Pointer(chintPath))
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_blob_create_from_stream(&stream, repo.ptr, chintPath)
 	if ecode < 0 {
@@ -118,8 +122,10 @@ func (stream *BlobWriteStream) Write(p []byte) (int, error) {
 	ptr := (*C.char)(unsafe.Pointer(header.Data))
 	size := C.size_t(header.Len)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C._go_git_writestream_write(stream.ptr, ptr, size)
 	runtime.KeepAlive(stream)
@@ -138,8 +144,10 @@ func (stream *BlobWriteStream) Free() {
 func (stream *BlobWriteStream) Commit() (*Oid, error) {
 	oid := C.git_oid{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_blob_create_from_stream_commit(&oid, stream.ptr)
 	runtime.KeepAlive(stream)

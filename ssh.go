@@ -67,8 +67,10 @@ type sshSmartSubtransport struct {
 }
 
 func (t *sshSmartSubtransport) Action(urlString string, action SmartServiceAction) (SmartSubtransportStream, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	u, err := url.Parse(urlString)
 	if err != nil {

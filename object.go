@@ -60,8 +60,10 @@ func (o *Object) Id() *Oid {
 func (o *Object) ShortId() (string, error) {
 	resultBuf := C.git_buf{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_object_short_id(&resultBuf, o.ptr)
 	runtime.KeepAlive(o)
@@ -95,8 +97,10 @@ func dupObject(obj *Object, kind ObjectType) (*C.git_object, error) {
 
 	var cobj *C.git_object
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_object_dup(&cobj, obj.ptr)
 	runtime.KeepAlive(obj)
@@ -215,8 +219,10 @@ func (o *Object) Free() {
 func (o *Object) Peel(t ObjectType) (*Object, error) {
 	var cobj *C.git_object
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_object_peel(&cobj, o.ptr, C.git_object_t(t))
 	runtime.KeepAlive(o)

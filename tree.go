@@ -70,8 +70,10 @@ func (t *Tree) EntryByName(filename string) *TreeEntry {
 //
 // Warning: this must examine every entry in the tree, so it is not fast.
 func (t *Tree) EntryById(id *Oid) *TreeEntry {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	entry := C.git_tree_entry_byid(t.cast_ptr, id.toC())
 	runtime.KeepAlive(id)
@@ -91,8 +93,10 @@ func (t *Tree) EntryByPath(path string) (*TreeEntry, error) {
 	defer C.free(unsafe.Pointer(cpath))
 	var entry *C.git_tree_entry
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_tree_entry_bypath(&entry, t.cast_ptr, cpath)
 	runtime.KeepAlive(t)
@@ -164,8 +168,10 @@ func (t *Tree) Walk(callback TreeWalkCallback) error {
 		callback:    callback,
 		errorTarget: &err,
 	}
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	handle := pointerHandles.Track(&data)
 	defer pointerHandles.Untrack(handle)
@@ -197,8 +203,10 @@ func (v *TreeBuilder) Insert(filename string, id *Oid, filemode Filemode) error 
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_treebuilder_insert(nil, v.ptr, cfilename, id.toC(), C.git_filemode_t(filemode))
 	runtime.KeepAlive(v)
@@ -214,8 +222,10 @@ func (v *TreeBuilder) Remove(filename string) error {
 	cfilename := C.CString(filename)
 	defer C.free(unsafe.Pointer(cfilename))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_treebuilder_remove(v.ptr, cfilename)
 	runtime.KeepAlive(v)
@@ -229,8 +239,10 @@ func (v *TreeBuilder) Remove(filename string) error {
 func (v *TreeBuilder) Write() (*Oid, error) {
 	oid := new(Oid)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_treebuilder_write(oid.toC(), v.ptr)
 	runtime.KeepAlive(v)

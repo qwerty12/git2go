@@ -43,8 +43,10 @@ func (sig *Signature) toC() (*C.git_signature, error) {
 
 	var out *C.git_signature
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	name := C.CString(sig.Name)
 	defer C.free(unsafe.Pointer(name))
@@ -63,8 +65,10 @@ func (sig *Signature) toC() (*C.git_signature, error) {
 func (repo *Repository) DefaultSignature() (*Signature, error) {
 	var out *C.git_signature
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cErr := C.git_signature_default(&out, repo.ptr)
 	runtime.KeepAlive(repo)

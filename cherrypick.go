@@ -45,8 +45,10 @@ func freeCherrypickOpts(copts *C.git_cherrypick_options) {
 func DefaultCherrypickOptions() (CherrypickOptions, error) {
 	c := C.git_cherrypick_options{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_cherrypick_options_init(&c, C.GIT_CHERRYPICK_OPTIONS_VERSION)
 	if ecode < 0 {
@@ -57,8 +59,10 @@ func DefaultCherrypickOptions() (CherrypickOptions, error) {
 }
 
 func (v *Repository) Cherrypick(commit *Commit, opts CherrypickOptions) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var err error
 	cOpts := populateCherrypickOptions(&C.git_cherrypick_options{}, &opts, &err)
@@ -77,8 +81,10 @@ func (v *Repository) Cherrypick(commit *Commit, opts CherrypickOptions) error {
 }
 
 func (r *Repository) CherrypickCommit(pick, our *Commit, opts CherrypickOptions) (*Index, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cOpts := populateMergeOptions(&C.git_merge_options{}, &opts.MergeOptions)
 	defer freeMergeOptions(cOpts)

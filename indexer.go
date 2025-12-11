@@ -35,8 +35,10 @@ func NewIndexer(packfilePath string, odb *Odb, callback TransferProgressCallback
 	indexer = new(Indexer)
 	populateRemoteCallbacks(&indexer.ccallbacks, &RemoteCallbacks{TransferProgressCallback: callback}, nil)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(packfilePath)
 	defer C.free(unsafe.Pointer(cstr))
@@ -58,8 +60,10 @@ func (indexer *Indexer) Write(data []byte) (int, error) {
 	ptr := unsafe.Pointer(header.Data)
 	size := C.size_t(header.Len)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_indexer_append(indexer.ptr, ptr, size, &indexer.stats)
 	runtime.KeepAlive(indexer)
@@ -76,8 +80,10 @@ func (indexer *Indexer) Write(data []byte) (int, error) {
 // It also returns the packfile's name. A packfile's name is derived from the
 // sorted hashing of all object names.
 func (indexer *Indexer) Commit() (string, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_indexer_commit(indexer.ptr, &indexer.stats)
 	if ret < 0 {

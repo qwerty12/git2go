@@ -62,8 +62,10 @@ func OpenRepository(path string) (*Repository, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_repository
 	ret := C.git_repository_open(&ptr, cpath)
@@ -97,8 +99,10 @@ func OpenRepositoryExtended(path string, flags RepositoryOpenFlag, ceiling strin
 		defer C.free(unsafe.Pointer(cceiling))
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_repository
 	ret := C.git_repository_open_ext(&ptr, cpath, C.uint(flags), cceiling)
@@ -116,8 +120,10 @@ func InitRepository(path string, isbare bool) (*Repository, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_repository
 	ret := C.git_repository_init(&ptr, cpath, ucbool(isbare))
@@ -132,8 +138,10 @@ func InitRepository(path string, isbare bool) (*Repository, error) {
 }
 
 func NewRepositoryWrapOdb(odb *Odb) (repo *Repository, err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_repository
 	ret := C.git_repository_wrap_odb(&ptr, odb.ptr)
@@ -168,8 +176,10 @@ func (v *Repository) Free() {
 func (v *Repository) Config() (*Config, error) {
 	config := new(Config)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_config(&config.ptr, v.ptr)
 	runtime.KeepAlive(v)
@@ -186,8 +196,10 @@ func (v *Repository) Config() (*Config, error) {
 // This configuration file will be used for all configuration queries involving
 // this repository.
 func (v *Repository) SetConfig(c *Config) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_set_config(v.ptr, c.ptr)
 	runtime.KeepAlive(v)
@@ -201,8 +213,10 @@ func (v *Repository) SetConfig(c *Config) error {
 func (v *Repository) Index() (*Index, error) {
 	var ptr *C.git_index
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_index(&ptr, v.ptr)
 	if ret < 0 {
@@ -215,8 +229,10 @@ func (v *Repository) Index() (*Index, error) {
 func (v *Repository) lookupType(id *Oid, t ObjectType) (*Object, error) {
 	var ptr *C.git_object
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_object_lookup(&ptr, v.ptr, id.toC(), C.git_object_t(t))
 	runtime.KeepAlive(id)
@@ -230,8 +246,10 @@ func (v *Repository) lookupType(id *Oid, t ObjectType) (*Object, error) {
 func (v *Repository) lookupPrefixType(id *Oid, prefix uint, t ObjectType) (*Object, error) {
 	var ptr *C.git_object
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_object_lookup_prefix(&ptr, v.ptr, id.toC(), C.size_t(prefix), C.git_object_t(t))
 	runtime.KeepAlive(id)
@@ -338,8 +356,10 @@ func (v *Repository) LookupPrefixTag(id *Oid, prefix uint) (*Tag, error) {
 func (v *Repository) Head() (*Reference, error) {
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_repository_head(&ptr, v.ptr)
 	if ecode < 0 {
@@ -353,8 +373,10 @@ func (v *Repository) SetHead(refname string) error {
 	cname := C.CString(refname)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_repository_set_head(v.ptr, cname)
 	runtime.KeepAlive(v)
@@ -365,8 +387,10 @@ func (v *Repository) SetHead(refname string) error {
 }
 
 func (v *Repository) SetHeadDetached(id *Oid) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_repository_set_head_detached(v.ptr, id.toC())
 	runtime.KeepAlive(v)
@@ -378,8 +402,10 @@ func (v *Repository) SetHeadDetached(id *Oid) error {
 }
 
 func (v *Repository) IsHeadDetached() (bool, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_head_detached(v.ptr)
 	runtime.KeepAlive(v)
@@ -391,8 +417,10 @@ func (v *Repository) IsHeadDetached() (bool, error) {
 }
 
 func (v *Repository) IsHeadUnborn() (bool, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_head_unborn(v.ptr)
 	runtime.KeepAlive(v)
@@ -403,8 +431,10 @@ func (v *Repository) IsHeadUnborn() (bool, error) {
 }
 
 func (v *Repository) IsEmpty() (bool, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_is_empty(v.ptr)
 	runtime.KeepAlive(v)
@@ -416,8 +446,10 @@ func (v *Repository) IsEmpty() (bool, error) {
 }
 
 func (v *Repository) IsShallow() (bool, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_is_shallow(v.ptr)
 	runtime.KeepAlive(v)
@@ -431,8 +463,10 @@ func (v *Repository) Walk() (*RevWalk, error) {
 
 	var walkPtr *C.git_revwalk
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revwalk_new(&walkPtr, v.ptr)
 	if ecode < 0 {
@@ -483,8 +517,10 @@ func (v *Repository) CreateCommit(
 	}
 	defer C.git_signature_free(committerSig)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_commit_create(
 		oid.toC(), v.ptr, cref,
@@ -519,8 +555,10 @@ func (v *Repository) CreateCommitWithSignature(
 		defer C.free(unsafe.Pointer(cSignatureField))
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	oid := new(Oid)
 	ret := C.git_commit_create_with_signature(oid.toC(), v.ptr, cCommitContent, cSignature, cSignatureField)
@@ -577,8 +615,10 @@ func (v *Repository) CreateCommitBuffer(
 	}
 	defer C.git_signature_free(committerSig)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var buf C.git_buf
 	defer C.git_buf_dispose(&buf)
@@ -646,8 +686,10 @@ func (v *Repository) CreateCommitFromIds(
 	}
 	defer C.git_signature_free(committerSig)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_commit_create_from_ids(
 		oid.toC(), v.ptr, cref,
@@ -678,8 +720,10 @@ func (v *Refdb) Free() {
 func (v *Repository) Odb() (odb *Odb, err error) {
 	odb = new(Odb)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_odb(&odb.ptr, v.ptr)
 	runtime.KeepAlive(v)
@@ -713,8 +757,10 @@ func (repo *Repository) SetWorkdir(workdir string, updateGitlink bool) error {
 	cstr := C.CString(workdir)
 	defer C.free(unsafe.Pointer(cstr))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if ret := C.git_repository_set_workdir(repo.ptr, cstr, cbool(updateGitlink)); ret < 0 {
 		return MakeGitError(ret)
@@ -727,8 +773,10 @@ func (repo *Repository) SetWorkdir(workdir string, updateGitlink bool) error {
 func (v *Repository) TreeBuilder() (*TreeBuilder, error) {
 	bld := new(TreeBuilder)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if ret := C.git_treebuilder_new(&bld.ptr, v.ptr, nil); ret < 0 {
 		return nil, MakeGitError(ret)
@@ -743,8 +791,10 @@ func (v *Repository) TreeBuilder() (*TreeBuilder, error) {
 func (v *Repository) TreeBuilderFromTree(tree *Tree) (*TreeBuilder, error) {
 	bld := new(TreeBuilder)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if ret := C.git_treebuilder_new(&bld.ptr, v.ptr, tree.cast_ptr); ret < 0 {
 		return nil, MakeGitError(ret)
@@ -771,8 +821,10 @@ const (
 )
 
 func (r *Repository) State() RepositoryState {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := RepositoryState(C.git_repository_state(r.ptr))
 	runtime.KeepAlive(r)
@@ -781,8 +833,10 @@ func (r *Repository) State() RepositoryState {
 }
 
 func (r *Repository) StateCleanup() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cErr := C.git_repository_state_cleanup(r.ptr)
 	runtime.KeepAlive(r)
@@ -793,8 +847,10 @@ func (r *Repository) StateCleanup() error {
 }
 
 func (r *Repository) AddGitIgnoreRules(rules string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	crules := C.CString(rules)
 	defer C.free(unsafe.Pointer(crules))
@@ -807,8 +863,10 @@ func (r *Repository) AddGitIgnoreRules(rules string) error {
 }
 
 func (r *Repository) ClearGitIgnoreRules() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_ignore_clear_internal_rules(r.ptr)
 	runtime.KeepAlive(r)
@@ -830,8 +888,10 @@ func (r *Repository) Message() (string, error) {
 	buf := C.git_buf{}
 	defer C.git_buf_dispose(&buf)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cErr := C.git_repository_message(&buf, r.ptr)
 	runtime.KeepAlive(r)
@@ -843,8 +903,10 @@ func (r *Repository) Message() (string, error) {
 
 // RemoveMessage removes git's prepared message.
 func (r *Repository) RemoveMessage() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cErr := C.git_repository_message_remove(r.ptr)
 	runtime.KeepAlive(r)
@@ -877,8 +939,10 @@ func (r *Repository) ItemPath(item RepositoryItem) (string, error) {
 	var c_buf C.git_buf
 	defer C.git_buf_dispose(&c_buf)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_item_path(&c_buf, r.ptr, C.git_repository_item_t(item))
 	runtime.KeepAlive(r)

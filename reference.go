@@ -32,8 +32,10 @@ func (c *ReferenceCollection) Lookup(name string) (*Reference, error) {
 	defer C.free(unsafe.Pointer(cname))
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_reference_lookup(&ptr, c.repo.ptr, cname)
 	runtime.KeepAlive(c)
@@ -58,8 +60,10 @@ func (c *ReferenceCollection) Create(name string, id *Oid, force bool, msg strin
 
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_reference_create(&ptr, c.repo.ptr, cname, id.toC(), cbool(force), cmsg)
 	runtime.KeepAlive(c)
@@ -88,8 +92,10 @@ func (c *ReferenceCollection) CreateSymbolic(name, target string, force bool, ms
 
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_reference_symbolic_create(&ptr, c.repo.ptr, cname, ctarget, cbool(force), cmsg)
 	runtime.KeepAlive(c)
@@ -106,8 +112,10 @@ func (c *ReferenceCollection) EnsureLog(name string) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_ensure_log(c.repo.ptr, cname)
 	runtime.KeepAlive(c)
@@ -124,8 +132,10 @@ func (c *ReferenceCollection) HasLog(name string) (bool, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_has_log(c.repo.ptr, cname)
 	runtime.KeepAlive(c)
@@ -141,8 +151,10 @@ func (c *ReferenceCollection) Dwim(name string) (*Reference, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_reference
 	ret := C.git_reference_dwim(&ptr, c.repo.ptr, cname)
@@ -166,8 +178,10 @@ func (v *Reference) SetSymbolicTarget(target string, msg string) (*Reference, er
 	ctarget := C.CString(target)
 	defer C.free(unsafe.Pointer(ctarget))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var cmsg *C.char
 	if msg == "" {
@@ -189,8 +203,10 @@ func (v *Reference) SetSymbolicTarget(target string, msg string) (*Reference, er
 func (v *Reference) SetTarget(target *Oid, msg string) (*Reference, error) {
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var cmsg *C.char
 	if msg == "" {
@@ -212,8 +228,10 @@ func (v *Reference) SetTarget(target *Oid, msg string) (*Reference, error) {
 func (v *Reference) Resolve() (*Reference, error) {
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_resolve(&ptr, v.ptr)
 	runtime.KeepAlive(v)
@@ -237,8 +255,10 @@ func (v *Reference) Rename(name string, force bool, msg string) (*Reference, err
 		defer C.free(unsafe.Pointer(cmsg))
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_rename(&ptr, v.ptr, cname, cbool(force), cmsg)
 	runtime.KeepAlive(v)
@@ -268,8 +288,10 @@ func (v *Reference) SymbolicTarget() string {
 }
 
 func (v *Reference) Delete() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_delete(v.ptr)
 	runtime.KeepAlive(v)
@@ -283,8 +305,10 @@ func (v *Reference) Delete() error {
 func (v *Reference) Peel(t ObjectType) (*Object, error) {
 	var cobj *C.git_object
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_reference_peel(&cobj, v.ptr, C.git_object_t(t))
 	runtime.KeepAlive(v)
@@ -379,8 +403,10 @@ type ReferenceNameIterator struct {
 func (repo *Repository) NewReferenceIterator() (*ReferenceIterator, error) {
 	var ptr *C.git_reference_iterator
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_iterator_new(&ptr, repo.ptr)
 	if ret < 0 {
@@ -394,8 +420,10 @@ func (repo *Repository) NewReferenceIterator() (*ReferenceIterator, error) {
 func (repo *Repository) NewReferenceNameIterator() (*ReferenceNameIterator, error) {
 	var ptr *C.git_reference_iterator
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_iterator_new(&ptr, repo.ptr)
 	if ret < 0 {
@@ -414,8 +442,10 @@ func (repo *Repository) NewReferenceIteratorGlob(glob string) (*ReferenceIterato
 	defer C.free(unsafe.Pointer(cstr))
 	var ptr *C.git_reference_iterator
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_iterator_glob_new(&ptr, repo.ptr, cstr)
 	if ret < 0 {
@@ -434,8 +464,10 @@ func (i *ReferenceIterator) Names() *ReferenceNameIterator {
 func (v *ReferenceNameIterator) Next() (string, error) {
 	var ptr *C.char
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_next_name(&ptr, v.ptr)
 	if ret < 0 {
@@ -450,8 +482,10 @@ func (v *ReferenceNameIterator) Next() (string, error) {
 func (v *ReferenceIterator) Next() (*Reference, error) {
 	var ptr *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_reference_next(&ptr, v.ptr)
 	if ret < 0 {
@@ -490,8 +524,10 @@ func ReferenceNameIsValid(name string) (bool, error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var valid C.int
 	ret := C.git_reference_name_is_valid(&valid, cname)
@@ -529,8 +565,10 @@ func ReferenceNormalizeName(name string, flags ReferenceFormat) (string, error) 
 	buf := (*C.char)(C.malloc(_refnameMaxLength))
 	defer C.free(unsafe.Pointer(buf))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_reference_normalize_name(buf, _refnameMaxLength, cname, C.uint(flags))
 	if ecode < 0 {

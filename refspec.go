@@ -21,8 +21,10 @@ func ParseRefspec(input string, isFetch bool) (*Refspec, error) {
 	cinput := C.CString(input)
 	defer C.free(unsafe.Pointer(cinput))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_refspec_parse(&ptr, cinput, cbool(isFetch))
 	if ret < 0 {
@@ -116,8 +118,10 @@ func (s *Refspec) Transform(refname string) (string, error) {
 	cname := C.CString(refname)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_refspec_transform(&buf, s.ptr, cname)
 	if ret < 0 {
@@ -136,8 +140,10 @@ func (s *Refspec) Rtransform(refname string) (string, error) {
 	cname := C.CString(refname)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_refspec_rtransform(&buf, s.ptr, cname)
 	if ret < 0 {

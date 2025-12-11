@@ -24,8 +24,10 @@ func MessageTrailers(message string) ([]Trailer, error) {
 	messageC := C.CString(message)
 	defer C.free(unsafe.Pointer(messageC))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_message_trailers(&trailersC, messageC)
 	if ecode < 0 {

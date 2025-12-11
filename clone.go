@@ -37,8 +37,10 @@ func Clone(url string, path string, options *CloneOptions) (*Repository, error) 
 		cOptions.checkout_branch = C.CString(options.CheckoutBranch)
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_repository
 	ret := C.git_clone(&ptr, curl, cpath, cOptions)

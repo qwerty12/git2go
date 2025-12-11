@@ -39,8 +39,10 @@ type DescribeOptions struct {
 
 // DefaultDescribeOptions returns default options for the describe operation.
 func DefaultDescribeOptions() (DescribeOptions, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	opts := C.git_describe_options{}
 	ecode := C.git_describe_options_init(&opts, C.GIT_DESCRIBE_OPTIONS_VERSION)
@@ -73,8 +75,10 @@ type DescribeFormatOptions struct {
 // DefaultDescribeFormatOptions returns default options for formatting
 // the output.
 func DefaultDescribeFormatOptions() (DescribeFormatOptions, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	opts := C.git_describe_format_options{}
 	ecode := C.git_describe_format_options_init(&opts, C.GIT_DESCRIBE_FORMAT_OPTIONS_VERSION)
@@ -124,8 +128,10 @@ func (c *Commit) Describe(opts *DescribeOptions) (*DescribeResult, error) {
 		}
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_describe_commit(&resultPtr, c.ptr, cDescribeOpts)
 	runtime.KeepAlive(c)
@@ -159,8 +165,10 @@ func (repo *Repository) DescribeWorkdir(opts *DescribeOptions) (*DescribeResult,
 		}
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_describe_workdir(&resultPtr, repo.ptr, cDescribeOpts)
 	runtime.KeepAlive(repo)
@@ -205,8 +213,10 @@ func (result *DescribeResult) Format(opts *DescribeFormatOptions) (string, error
 		}
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_describe_format(&resultBuf, result.ptr, cFormatOpts)
 	runtime.KeepAlive(result)

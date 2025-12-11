@@ -19,8 +19,10 @@ type BlameOptions struct {
 }
 
 func DefaultBlameOptions() (BlameOptions, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	opts := C.git_blame_options{}
 	ecode := C.git_blame_options_init(&opts, C.GIT_BLAME_OPTIONS_VERSION)
@@ -74,8 +76,10 @@ func (v *Repository) BlameFile(path string, opts *BlameOptions) (*Blame, error) 
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_blame_file(&blamePtr, v.ptr, cpath, copts)
 	runtime.KeepAlive(v)

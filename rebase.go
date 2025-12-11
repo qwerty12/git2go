@@ -213,8 +213,10 @@ type rebaseOptionsData struct {
 func DefaultRebaseOptions() (RebaseOptions, error) {
 	opts := C.git_rebase_options{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_rebase_options_init(&opts, C.GIT_REBASE_OPTIONS_VERSION)
 	if ecode < 0 {
@@ -287,8 +289,10 @@ type Rebase struct {
 
 // InitRebase initializes a rebase operation to rebase the changes in branch relative to upstream onto another branch.
 func (r *Repository) InitRebase(branch *AnnotatedCommit, upstream *AnnotatedCommit, onto *AnnotatedCommit, opts *RebaseOptions) (*Rebase, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if branch == nil {
 		branch = &AnnotatedCommit{ptr: nil}
@@ -323,8 +327,10 @@ func (r *Repository) InitRebase(branch *AnnotatedCommit, upstream *AnnotatedComm
 
 // OpenRebase opens an existing rebase that was previously started by either an invocation of InitRebase or by another client.
 func (r *Repository) OpenRebase(opts *RebaseOptions) (*Rebase, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_rebase
 	var err error
@@ -354,8 +360,10 @@ func (rebase *Rebase) OperationAt(index uint) *RebaseOperation {
 // currently being applied. There is also an error returned for API
 // compatibility.
 func (rebase *Rebase) CurrentOperationIndex() (uint, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var err error
 	operationIndex := uint(C.git_rebase_operation_current(rebase.ptr))
@@ -379,8 +387,10 @@ func (rebase *Rebase) OperationCount() uint {
 // then the patch will be applied and the index and working directory will be updated with the changes.
 // If there are conflicts, you will need to address those before committing the changes.
 func (rebase *Rebase) Next() (*RebaseOperation, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_rebase_operation
 	err := C.git_rebase_next(&ptr, rebase.ptr)
@@ -400,8 +410,10 @@ func (rebase *Rebase) Next() (*RebaseOperation, error) {
 // This is only applicable for in-memory rebases; for rebases within a working
 // directory, the changes were applied to the repository's index.
 func (rebase *Rebase) InmemoryIndex() (*Index, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_index
 	err := C.git_rebase_inmemory_index(&ptr, rebase.ptr)
@@ -416,8 +428,10 @@ func (rebase *Rebase) InmemoryIndex() (*Index, error) {
 // Commit commits the current patch.
 // You must have resolved any conflicts that were introduced during the patch application from the Next() invocation.
 func (rebase *Rebase) Commit(ID *Oid, author, committer *Signature, message string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	authorSig, err := author.toC()
 	if err != nil {
@@ -446,8 +460,10 @@ func (rebase *Rebase) Commit(ID *Oid, author, committer *Signature, message stri
 
 // Finish finishes a rebase that is currently in progress once all patches have been applied.
 func (rebase *Rebase) Finish() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_rebase_finish(rebase.ptr, nil)
 	runtime.KeepAlive(rebase)
@@ -460,8 +476,10 @@ func (rebase *Rebase) Finish() error {
 
 // Abort aborts a rebase that is currently in progress, resetting the repository and working directory to their state before rebase began.
 func (rebase *Rebase) Abort() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_rebase_abort(rebase.ptr)
 	runtime.KeepAlive(rebase)

@@ -26,8 +26,10 @@ type Mempack struct {
 func NewMempack(odb *Odb) (mempack *Mempack, err error) {
 	mempack = new(Mempack)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_mempack_new(&mempack.ptr)
 	if ret < 0 {
@@ -63,8 +65,10 @@ func NewMempack(odb *Odb) (mempack *Mempack, err error) {
 func (mempack *Mempack) Dump(repository *Repository) ([]byte, error) {
 	buf := C.git_buf{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_mempack_dump(&buf, repository.ptr, mempack.ptr)
 	runtime.KeepAlive(repository)
@@ -81,8 +85,10 @@ func (mempack *Mempack) Dump(repository *Repository) ([]byte, error) {
 // This assumes that Mempack.Dump has been called before to store all the
 // queued objects into a single packfile.
 func (mempack *Mempack) Reset() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_mempack_reset(mempack.ptr)
 	if ret < 0 {

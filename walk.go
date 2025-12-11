@@ -39,8 +39,10 @@ func (v *RevWalk) Reset() {
 }
 
 func (v *RevWalk) Push(id *Oid) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revwalk_push(v.ptr, id.toC())
 	runtime.KeepAlive(v)
@@ -52,8 +54,10 @@ func (v *RevWalk) Push(id *Oid) error {
 }
 
 func (v *RevWalk) PushGlob(glob string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(glob)
 	defer C.free(unsafe.Pointer(cstr))
@@ -67,8 +71,10 @@ func (v *RevWalk) PushGlob(glob string) error {
 }
 
 func (v *RevWalk) PushRange(r string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(r)
 	defer C.free(unsafe.Pointer(cstr))
@@ -82,8 +88,10 @@ func (v *RevWalk) PushRange(r string) error {
 }
 
 func (v *RevWalk) PushRef(r string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(r)
 	defer C.free(unsafe.Pointer(cstr))
@@ -97,8 +105,10 @@ func (v *RevWalk) PushRef(r string) error {
 }
 
 func (v *RevWalk) PushHead() (err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revwalk_push_head(v.ptr)
 	runtime.KeepAlive(v)
@@ -109,8 +119,10 @@ func (v *RevWalk) PushHead() (err error) {
 }
 
 func (v *RevWalk) Hide(id *Oid) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revwalk_hide(v.ptr, id.toC())
 	runtime.KeepAlive(v)
@@ -122,8 +134,10 @@ func (v *RevWalk) Hide(id *Oid) error {
 }
 
 func (v *RevWalk) HideGlob(glob string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(glob)
 	defer C.free(unsafe.Pointer(cstr))
@@ -137,8 +151,10 @@ func (v *RevWalk) HideGlob(glob string) error {
 }
 
 func (v *RevWalk) HideRef(r string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(r)
 	defer C.free(unsafe.Pointer(cstr))
@@ -152,8 +168,10 @@ func (v *RevWalk) HideRef(r string) error {
 }
 
 func (v *RevWalk) HideHead() (err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revwalk_hide_head(v.ptr)
 	runtime.KeepAlive(v)
@@ -164,8 +182,10 @@ func (v *RevWalk) HideHead() (err error) {
 }
 
 func (v *RevWalk) Next(id *Oid) (err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_revwalk_next(id.toC(), v.ptr)
 	runtime.KeepAlive(v)

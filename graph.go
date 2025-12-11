@@ -9,8 +9,10 @@ import (
 )
 
 func (repo *Repository) DescendantOf(commit, ancestor *Oid) (bool, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_graph_descendant_of(repo.ptr, commit.toC(), ancestor.toC())
 	runtime.KeepAlive(repo)
@@ -24,8 +26,10 @@ func (repo *Repository) DescendantOf(commit, ancestor *Oid) (bool, error) {
 }
 
 func (repo *Repository) AheadBehind(local, upstream *Oid) (ahead, behind int, err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var aheadT C.size_t
 	var behindT C.size_t
@@ -53,8 +57,10 @@ func (repo *Repository) ReachableFromAny(commit *Oid, descendants []*Oid) (bool,
 		coids[i] = *descendants[i].toC()
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_graph_reachable_from_any(repo.ptr, commit.toC(), &coids[0], C.size_t(len(descendants)))
 	runtime.KeepAlive(repo)

@@ -22,8 +22,10 @@ type Packbuilder struct {
 }
 
 func (repo *Repository) NewPackbuilder() (*Packbuilder, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_packbuilder
 	ret := C.git_packbuilder_new(&ptr, repo.ptr)
@@ -48,8 +50,10 @@ func (pb *Packbuilder) Insert(id *Oid, name string) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_packbuilder_insert(pb.ptr, id.toC(), cname)
 	runtime.KeepAlive(pb)
@@ -61,8 +65,10 @@ func (pb *Packbuilder) Insert(id *Oid, name string) error {
 }
 
 func (pb *Packbuilder) InsertCommit(id *Oid) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_packbuilder_insert_commit(pb.ptr, id.toC())
 	runtime.KeepAlive(pb)
@@ -74,8 +80,10 @@ func (pb *Packbuilder) InsertCommit(id *Oid) error {
 }
 
 func (pb *Packbuilder) InsertTree(id *Oid) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_packbuilder_insert_tree(pb.ptr, id.toC())
 	runtime.KeepAlive(pb)
@@ -87,8 +95,10 @@ func (pb *Packbuilder) InsertTree(id *Oid) error {
 }
 
 func (pb *Packbuilder) InsertWalk(walk *RevWalk) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_packbuilder_insert_walk(pb.ptr, walk.ptr)
 	runtime.KeepAlive(pb)
@@ -109,8 +119,10 @@ func (pb *Packbuilder) WriteToFile(name string, mode os.FileMode) error {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_packbuilder_write(pb.ptr, cname, C.uint(mode.Perm()), nil, nil)
 	runtime.KeepAlive(pb)
@@ -169,8 +181,10 @@ func (pb *Packbuilder) ForEach(callback PackbuilderForeachCallback) error {
 	handle := pointerHandles.Track(&data)
 	defer pointerHandles.Untrack(handle)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C._go_git_packbuilder_foreach(pb.ptr, handle)
 	runtime.KeepAlive(pb)

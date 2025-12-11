@@ -15,8 +15,10 @@ const (
 )
 
 func (r *Repository) ResetToCommit(commit *Commit, resetType ResetType, opts *CheckoutOptions) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var err error
 	cOpts := populateCheckoutOptions(&C.git_checkout_options{}, opts, &err)
@@ -38,8 +40,10 @@ func (r *Repository) ResetDefaultToCommit(commit *Commit, pathspecs []string) er
 	cpathspecs.strings = makeCStringsFromStrings(pathspecs)
 	defer freeStrarray(&cpathspecs)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 	ret := C.git_reset_default(r.ptr, commit.ptr, &cpathspecs)
 
 	if ret < 0 {

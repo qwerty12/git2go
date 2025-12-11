@@ -166,8 +166,10 @@ func (v *Repository) StatusList(opts *StatusOptions) (*StatusList, error) {
 		}
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_status_list_new(&ptr, v.ptr, copts)
 	if ret < 0 {
@@ -182,8 +184,10 @@ func (v *Repository) StatusFile(path string) (Status, error) {
 	cPath := C.CString(path)
 	defer C.free(unsafe.Pointer(cPath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_status_file(&statusFlags, v.ptr, cPath)
 	runtime.KeepAlive(v)

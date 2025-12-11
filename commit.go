@@ -111,8 +111,10 @@ func (c *Commit) ExtractSignature() (string, string, error) {
 	oid := c.Id()
 	repo := C.git_commit_owner(c.cast_ptr)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 	ret := C.git_commit_extract_signature(&c_signature, &c_signed, repo, oid.toC(), nil)
 	runtime.KeepAlive(oid)
 	if ret < 0 {
@@ -132,8 +134,10 @@ func (c *Commit) Summary() string {
 func (c *Commit) Tree() (*Tree, error) {
 	var ptr *C.git_tree
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_commit_tree(&ptr, c.cast_ptr)
 	runtime.KeepAlive(c)
@@ -200,8 +204,10 @@ func (c *Commit) Amend(refname string, author, committer *Signature, message str
 	cmsg := C.CString(message)
 	defer C.free(unsafe.Pointer(cmsg))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	authorSig, err := author.toC()
 	if err != nil {

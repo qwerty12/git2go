@@ -86,8 +86,10 @@ type Transport struct {
 
 // SmartRemoteConnectOptions gets a copy of the proxy options for this transport.
 func (t *Transport) SmartRemoteConnectOptions() (*RemoteConnectOptions, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var copts C.git_remote_connect_options
 	if ret := C.git_transport_remote_connect_options(&copts, t.ptr); ret < 0 {
@@ -102,8 +104,10 @@ func (t *Transport) SmartCredentials(user string, methods CredentialType) (*Cred
 	cred := newCredential()
 	var cstr *C.char
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if user != "" {
 		cstr = C.CString(user)
@@ -156,8 +160,10 @@ func (t *Transport) SmartCertificateCheck(cert *Certificate, valid bool, hostnam
 		ccert = (*C.git_cert)(unsafe.Pointer(&cx509Cert))
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	chostname := C.CString(hostname)
 	defer C.free(unsafe.Pointer(chostname))
@@ -256,8 +262,10 @@ func newRegisteredSmartTransport(
 	cstr := C.CString(name)
 	defer C.free(unsafe.Pointer(cstr))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	registeredSmartTransport := &RegisteredSmartTransport{
 		name:      name,
@@ -279,8 +287,10 @@ func newRegisteredSmartTransport(
 // Free releases all resources used by the RegisteredSmartTransport and
 // unregisters the custom transport definition referenced by it.
 func (t *RegisteredSmartTransport) Free() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(t.name)
 	defer C.free(unsafe.Pointer(cstr))
@@ -320,8 +330,10 @@ func smartTransportCallback(
 	managed.handle = managedHandle
 	managed.subtransport.handle = managedHandle
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C._go_git_transport_smart(out, owner, cbool(registeredSmartTransport.stateless), managed.subtransport)
 	if ret != 0 {
@@ -378,8 +390,10 @@ func smartSubtransportActionCallback(
 
 	// It's okay to do strict equality here: we expect both to be identical.
 	if subtransport.currentManagedStream == nil || subtransport.currentManagedStream.underlying != underlyingStream {
-		runtime.LockOSThread()
-		defer runtime.UnlockOSThread()
+		if shouldCallLockOSThread() {
+			runtime.LockOSThread()
+			defer runtime.UnlockOSThread()
+		}
 
 		stream := (*C._go_managed_smart_subtransport_stream)(C.calloc(1, C.size_t(unsafe.Sizeof(C._go_managed_smart_subtransport_stream{}))))
 		managed := &managedSmartSubtransportStream{

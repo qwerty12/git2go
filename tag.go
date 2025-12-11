@@ -85,8 +85,10 @@ func (c *TagsCollection) Create(name string, obj Objecter, tagger *Signature, me
 	}
 	defer C.git_signature_free(taggerSig)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	o := obj.AsObject()
 	ret := C.git_tag_create(oid.toC(), c.repo.ptr, cname, o.ptr, taggerSig, cmessage, 0)
@@ -100,8 +102,10 @@ func (c *TagsCollection) Create(name string, obj Objecter, tagger *Signature, me
 }
 
 func (c *TagsCollection) Remove(name string) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
@@ -134,8 +138,10 @@ func (c *TagsCollection) CreateLightweight(name string, obj Objecter, force bool
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	o := obj.AsObject()
 	err := C.git_tag_create_lightweight(oid.toC(), c.repo.ptr, cname, o.ptr, cbool(force))
@@ -153,8 +159,10 @@ func (c *TagsCollection) CreateLightweight(name string, obj Objecter, force bool
 func (c *TagsCollection) List() ([]string, error) {
 	var strC C.git_strarray
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_tag_list(&strC, c.repo.ptr)
 	runtime.KeepAlive(c)
@@ -177,8 +185,10 @@ func (c *TagsCollection) ListWithMatch(pattern string) ([]string, error) {
 	patternC := C.CString(pattern)
 	defer C.free(unsafe.Pointer(patternC))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_tag_list_match(&strC, patternC, c.repo.ptr)
 	runtime.KeepAlive(c)
@@ -231,8 +241,10 @@ func (c *TagsCollection) Foreach(callback TagForeachCallback) error {
 	handle := pointerHandles.Track(&data)
 	defer pointerHandles.Untrack(handle)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C._go_git_tag_foreach(c.repo.ptr, handle)
 	runtime.KeepAlive(c)

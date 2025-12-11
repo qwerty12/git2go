@@ -118,8 +118,10 @@ func newIndexFromC(ptr *C.git_index, repo *Repository) *Index {
 func NewIndex() (*Index, error) {
 	var ptr *C.git_index
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if err := C.git_index_new(&ptr); err < 0 {
 		return nil, MakeGitError(err)
@@ -136,8 +138,10 @@ func OpenIndex(path string) (*Index, error) {
 	var cpath = C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if err := C.git_index_open(&ptr, cpath); err < 0 {
 		return nil, MakeGitError(err)
@@ -157,8 +161,10 @@ func (v *Index) Path() string {
 // Clear clears the index object in memory; changes must be explicitly
 // written to disk for them to take effect persistently
 func (v *Index) Clear() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_index_clear(v.ptr)
 	runtime.KeepAlive(v)
@@ -176,8 +182,10 @@ func (v *Index) Add(entry *IndexEntry) error {
 	populateCIndexEntry(entry, &centry)
 	defer freeCIndexEntry(&centry)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	err := C.git_index_add(v.ptr, &centry)
 	runtime.KeepAlive(v)
@@ -192,8 +200,10 @@ func (v *Index) AddByPath(path string) error {
 	cstr := C.CString(path)
 	defer C.free(unsafe.Pointer(cstr))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_add_bypath(v.ptr, cstr)
 	runtime.KeepAlive(v)
@@ -216,8 +226,10 @@ func (v *Index) AddFromBuffer(entry *IndexEntry, buffer []byte) error {
 		cbuffer = unsafe.Pointer(&buffer[0])
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	if err := C.git_index_add_from_buffer(v.ptr, &centry, cbuffer, C.size_t(len(buffer))); err < 0 {
 		return MakeGitError(err)
@@ -237,8 +249,10 @@ func (v *Index) AddAll(pathspecs []string, flags IndexAddOption, callback IndexM
 		callback:    callback,
 		errorTarget: &err,
 	}
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var handle unsafe.Pointer
 	if callback != nil {
@@ -274,8 +288,10 @@ func (v *Index) UpdateAll(pathspecs []string, callback IndexMatchedPathCallback)
 		callback:    callback,
 		errorTarget: &err,
 	}
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var handle unsafe.Pointer
 	if callback != nil {
@@ -310,8 +326,10 @@ func (v *Index) RemoveAll(pathspecs []string, callback IndexMatchedPathCallback)
 		callback:    callback,
 		errorTarget: &err,
 	}
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var handle unsafe.Pointer
 	if callback != nil {
@@ -355,8 +373,10 @@ func (v *Index) RemoveByPath(path string) error {
 	cstr := C.CString(path)
 	defer C.free(unsafe.Pointer(cstr))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_remove_bypath(v.ptr, cstr)
 	runtime.KeepAlive(v)
@@ -372,8 +392,10 @@ func (v *Index) RemoveDirectory(dir string, stage int) error {
 	cstr := C.CString(dir)
 	defer C.free(unsafe.Pointer(cstr))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_remove_directory(v.ptr, cstr, C.int(stage))
 	runtime.KeepAlive(v)
@@ -387,8 +409,10 @@ func (v *Index) RemoveDirectory(dir string, stage int) error {
 func (v *Index) WriteTreeTo(repo *Repository) (*Oid, error) {
 	oid := new(Oid)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_write_tree_to(oid.toC(), v.ptr, repo.ptr)
 	runtime.KeepAlive(v)
@@ -403,8 +427,10 @@ func (v *Index) WriteTreeTo(repo *Repository) (*Oid, error) {
 // ReadTree replaces the contents of the index with those of the given
 // tree
 func (v *Index) ReadTree(tree *Tree) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_read_tree(v.ptr, tree.cast_ptr)
 	runtime.KeepAlive(v)
@@ -419,8 +445,10 @@ func (v *Index) ReadTree(tree *Tree) error {
 func (v *Index) WriteTree() (*Oid, error) {
 	oid := new(Oid)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_write_tree(oid.toC(), v.ptr)
 	runtime.KeepAlive(v)
@@ -432,8 +460,10 @@ func (v *Index) WriteTree() (*Oid, error) {
 }
 
 func (v *Index) Write() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_index_write(v.ptr)
 	runtime.KeepAlive(v)
@@ -469,8 +499,10 @@ func (v *Index) EntryByPath(path string, stage int) (*IndexEntry, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	centry := C.git_index_get_bypath(v.ptr, cpath, C.int(stage))
 	if centry == nil {
@@ -485,8 +517,10 @@ func (v *Index) Find(path string) (uint, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var pos C.size_t
 	ret := C.git_index_find(&pos, v.ptr, cpath)
@@ -501,8 +535,10 @@ func (v *Index) FindPrefix(prefix string) (uint, error) {
 	cprefix := C.CString(prefix)
 	defer C.free(unsafe.Pointer(cprefix))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var pos C.size_t
 	ret := C.git_index_find_prefix(&pos, v.ptr, cprefix)
@@ -549,8 +585,10 @@ func (v *Index) AddConflict(ancestor *IndexEntry, our *IndexEntry, their *IndexE
 		defer freeCIndexEntry(ctheir)
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_index_conflict_add(v.ptr, cancestor, cour, ctheir)
 	runtime.KeepAlive(v)
@@ -578,8 +616,10 @@ func (v *Index) Conflict(path string) (IndexConflict, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_index_conflict_get(&cancestor, &cour, &ctheir, v.ptr, cpath)
 	if ecode < 0 {
@@ -604,8 +644,10 @@ func (v *Index) RemoveConflict(path string) error {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_index_conflict_remove(v.ptr, cpath)
 	runtime.KeepAlive(v)
@@ -639,8 +681,10 @@ func (v *IndexConflictIterator) Free() {
 func (v *Index) ConflictIterator() (*IndexConflictIterator, error) {
 	var i *C.git_index_conflict_iterator
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_index_conflict_iterator_new(&i, v.ptr)
 	if ecode < 0 {
@@ -654,8 +698,10 @@ func (v *IndexConflictIterator) Next() (IndexConflict, error) {
 	var cour *C.git_index_entry
 	var ctheir *C.git_index_entry
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_index_conflict_next(&cancestor, &cour, &ctheir, v.ptr)
 	if ecode < 0 {

@@ -137,9 +137,15 @@ type InitOptions struct {
 }
 
 var lastInitOptions *InitOptions
+var libGitNotThreadSafe bool
 
 var pointerHandles *HandleList
 var remotePointers *remotePointerList
+
+//go:nosplit
+func shouldCallLockOSThread() bool {
+	return !libGitNotThreadSafe
+}
 
 func InitLibGit2(initOpts *InitOptions) {
 	lastInitOptions = initOpts // obviously, this isn't intended to be thread-safe
@@ -166,7 +172,8 @@ func InitLibGit2(initOpts *InitOptions) {
 	// with multi-threading support. The most likely outcome is a segfault
 	// or panic at an incomprehensible time, so let's make it easy by
 	// panicking right here.
-	if !initOpts.DoNotCheckThreading && features&FeatureThreads == 0 {
+	libGitNotThreadSafe = features&FeatureThreads == 0
+	if !initOpts.DoNotCheckThreading && libGitNotThreadSafe {
 		panic("libgit2 was not built with threading support")
 	}
 
@@ -290,8 +297,10 @@ func ShortenOids(ids []*Oid, minlen int) (int, error) {
 
 	var ret C.int
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	for _, id := range ids {
 		buf := make([]byte, 41)
@@ -394,8 +403,10 @@ func Discover(start string, across_fs bool, ceiling_dirs []string) (string, erro
 	var buf C.git_buf
 	defer C.git_buf_dispose(&buf)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_repository_discover(&buf, cstart, cbool(across_fs), ceildirs)
 	if ret < 0 {

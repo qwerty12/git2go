@@ -63,8 +63,10 @@ func (r *Repository) Revparse(spec string) (*Revspec, error) {
 
 	var crevspec C.git_revspec
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revparse(&crevspec, r.ptr, cspec)
 	if ecode != 0 {
@@ -80,8 +82,10 @@ func (v *Repository) RevparseSingle(spec string) (*Object, error) {
 
 	var ptr *C.git_object
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revparse_single(&ptr, v.ptr, cspec)
 	if ecode < 0 {
@@ -98,8 +102,10 @@ func (r *Repository) RevparseExt(spec string) (*Object, *Reference, error) {
 	var obj *C.git_object
 	var ref *C.git_reference
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_revparse_ext(&obj, &ref, r.ptr, cspec)
 	if ecode != 0 {

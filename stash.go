@@ -58,8 +58,10 @@ func (c *StashCollection) Save(
 	messageC := C.CString(message)
 	defer C.free(unsafe.Pointer(messageC))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_stash_save(
 		oid.toC(), c.repo.ptr,
@@ -149,8 +151,10 @@ type StashApplyOptions struct {
 func DefaultStashApplyOptions() (StashApplyOptions, error) {
 	optsC := C.git_stash_apply_options{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_stash_apply_options_init(&optsC, C.GIT_STASH_APPLY_OPTIONS_VERSION)
 	if ecode < 0 {
@@ -219,8 +223,10 @@ func (c *StashCollection) Apply(index int, opts StashApplyOptions) error {
 	optsC := populateStashApplyOptions(&C.git_stash_apply_options{}, &opts, &err)
 	defer freeStashApplyOptions(optsC)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_stash_apply(c.repo.ptr, C.size_t(index), optsC)
 	runtime.KeepAlive(c)
@@ -274,8 +280,10 @@ func (c *StashCollection) Foreach(callback StashCallback) error {
 	handle := pointerHandles.Track(&data)
 	defer pointerHandles.Untrack(handle)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C._go_git_stash_foreach(c.repo.ptr, handle)
 	runtime.KeepAlive(c)
@@ -296,8 +304,10 @@ func (c *StashCollection) Foreach(callback StashCallback) error {
 // Returns error code ErrorCodeNotFound if there's no stashed
 // state for the given index.
 func (c *StashCollection) Drop(index int) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_stash_drop(c.repo.ptr, C.size_t(index))
 	runtime.KeepAlive(c)
@@ -322,8 +332,10 @@ func (c *StashCollection) Pop(index int, opts StashApplyOptions) error {
 	optsC := populateStashApplyOptions(&C.git_stash_apply_options{}, &opts, &err)
 	defer freeStashApplyOptions(optsC)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_stash_pop(c.repo.ptr, C.size_t(index), optsC)
 	runtime.KeepAlive(c)

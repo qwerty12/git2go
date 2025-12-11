@@ -34,8 +34,10 @@ type OdbBackend struct {
 func NewOdb() (odb *Odb, err error) {
 	odb = new(Odb)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_new(&odb.ptr)
 	if ret < 0 {
@@ -52,8 +54,10 @@ func NewOdbBackendFromC(ptr unsafe.Pointer) (backend *OdbBackend) {
 }
 
 func (v *Odb) AddAlternate(backend *OdbBackend, priority int) (err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_add_alternate(v.ptr, backend.ptr, C.int(priority))
 	runtime.KeepAlive(v)
@@ -65,8 +69,10 @@ func (v *Odb) AddAlternate(backend *OdbBackend, priority int) (err error) {
 }
 
 func (v *Odb) AddBackend(backend *OdbBackend, priority int) (err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_add_backend(v.ptr, backend.ptr, C.int(priority))
 	runtime.KeepAlive(v)
@@ -78,8 +84,10 @@ func (v *Odb) AddBackend(backend *OdbBackend, priority int) (err error) {
 }
 
 func NewOdbBackendOnePack(packfileIndexPath string) (backend *OdbBackend, err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	cstr := C.CString(packfileIndexPath)
 	defer C.free(unsafe.Pointer(cstr))
@@ -94,8 +102,10 @@ func NewOdbBackendOnePack(packfileIndexPath string) (backend *OdbBackend, err er
 
 // NewOdbBackendLoose creates a backend for loose objects.
 func NewOdbBackendLoose(objectsDir string, compressionLevel int, doFsync bool, dirMode os.FileMode, fileMode os.FileMode) (backend *OdbBackend, err error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var odbLoose *C.git_odb_backend = nil
 	var doFsyncInt C.int
@@ -114,8 +124,10 @@ func NewOdbBackendLoose(objectsDir string, compressionLevel int, doFsync bool, d
 }
 
 func (v *Odb) ReadHeader(oid *Oid) (uint64, ObjectType, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var sz C.size_t
 	var cotype C.git_object_t
@@ -139,8 +151,10 @@ func (v *Odb) Exists(oid *Oid) bool {
 func (v *Odb) Write(data []byte, otype ObjectType) (oid *Oid, err error) {
 	oid = new(Oid)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var size C.size_t
 	if len(data) > 0 {
@@ -162,8 +176,10 @@ func (v *Odb) Write(data []byte, otype ObjectType) (oid *Oid, err error) {
 func (v *Odb) Read(oid *Oid) (obj *OdbObject, err error) {
 	obj = new(OdbObject)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_read(&obj.ptr, v.ptr, oid.toC())
 	runtime.KeepAlive(v)
@@ -177,8 +193,10 @@ func (v *Odb) Read(oid *Oid) (obj *OdbObject, err error) {
 }
 
 func (odb *Odb) Refresh() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_refresh(odb.ptr)
 	runtime.KeepAlive(odb)
@@ -190,8 +208,10 @@ func (odb *Odb) Refresh() error {
 }
 
 func (odb *Odb) WriteMultiPackIndex() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_write_multi_pack_index(odb.ptr)
 	runtime.KeepAlive(odb)
@@ -230,8 +250,10 @@ func (v *Odb) ForEach(callback OdbForEachCallback) error {
 		callback:    callback,
 		errorTarget: &err,
 	}
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	handle := pointerHandles.Track(&data)
 	defer pointerHandles.Untrack(handle)
@@ -252,8 +274,10 @@ func (v *Odb) ForEach(callback OdbForEachCallback) error {
 func (v *Odb) Hash(data []byte, otype ObjectType) (oid *Oid, err error) {
 	oid = new(Oid)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var size C.size_t
 	if len(data) > 0 {
@@ -278,8 +302,10 @@ func (v *Odb) NewReadStream(id *Oid) (*OdbReadStream, error) {
 	var ctype C.git_object_t
 	var csize C.size_t
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_open_rstream(&stream.ptr, &csize, &ctype, v.ptr, id.toC())
 	runtime.KeepAlive(v)
@@ -300,8 +326,10 @@ func (v *Odb) NewReadStream(id *Oid) (*OdbReadStream, error) {
 func (v *Odb) NewWriteStream(size int64, otype ObjectType) (*OdbWriteStream, error) {
 	stream := new(OdbWriteStream)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_open_wstream(&stream.ptr, v.ptr, C.git_object_size_t(size), C.git_object_t(otype))
 	runtime.KeepAlive(v)
@@ -319,8 +347,10 @@ func (v *Odb) NewWriteStream(size int64, otype ObjectType) (*OdbWriteStream, err
 // layer does not understand pack files, the objects will be stored in whatever
 // format the ODB layer uses.
 func (v *Odb) NewWritePack(callback TransferProgressCallback) (*OdbWritepack, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	writepack := new(OdbWritepack)
 	populateRemoteCallbacks(&writepack.ccallbacks, &RemoteCallbacks{TransferProgressCallback: callback}, nil)
@@ -397,8 +427,10 @@ func (stream *OdbReadStream) Read(data []byte) (int, error) {
 	ptr := (*C.char)(unsafe.Pointer(header.Data))
 	size := C.size_t(header.Cap)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_stream_read(stream.ptr, ptr, size)
 	runtime.KeepAlive(stream)
@@ -437,8 +469,10 @@ func (stream *OdbWriteStream) Write(data []byte) (int, error) {
 	ptr := (*C.char)(unsafe.Pointer(header.Data))
 	size := C.size_t(header.Len)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_stream_write(stream.ptr, ptr, size)
 	runtime.KeepAlive(stream)
@@ -452,8 +486,10 @@ func (stream *OdbWriteStream) Write(data []byte) (int, error) {
 // Close signals that all the data has been written and stores the
 // resulting object id in the stream's Id field.
 func (stream *OdbWriteStream) Close() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_odb_stream_finalize_write(stream.Id.toC(), stream.ptr)
 	runtime.KeepAlive(stream)
@@ -482,8 +518,10 @@ func (writepack *OdbWritepack) Write(data []byte) (int, error) {
 	ptr := unsafe.Pointer(header.Data)
 	size := C.size_t(header.Len)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C._go_git_odb_writepack_append(writepack.ptr, ptr, size, &writepack.stats)
 	runtime.KeepAlive(writepack)
@@ -495,8 +533,10 @@ func (writepack *OdbWritepack) Write(data []byte) (int, error) {
 }
 
 func (writepack *OdbWritepack) Commit() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C._go_git_odb_writepack_commit(writepack.ptr, &writepack.stats)
 	runtime.KeepAlive(writepack)

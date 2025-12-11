@@ -42,8 +42,10 @@ func (patch *Patch) String() (string, error) {
 		return "", ErrInvalid
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var buf C.git_buf
 
@@ -82,8 +84,10 @@ func (v *Repository) PatchFromBuffers(oldPath, newPath string, oldBuf, newBuf []
 	copts := populateDiffOptions(&C.git_diff_options{}, opts, v, &err)
 	defer freeDiffOptions(copts)
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_patch_from_buffers(&patchPtr, oldPtr, C.size_t(len(oldBuf)), cOldPath, newPtr, C.size_t(len(newBuf)), cNewPath, copts)
 	runtime.KeepAlive(oldBuf)

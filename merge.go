@@ -29,8 +29,10 @@ func newAnnotatedCommitFromC(ptr *C.git_annotated_commit, r *Repository) *Annota
 }
 
 func (mh *AnnotatedCommit) Id() *Oid {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := newOidFromC(C.git_annotated_commit_id(mh.ptr))
 	runtime.KeepAlive(mh)
@@ -49,8 +51,10 @@ func (r *Repository) AnnotatedCommitFromFetchHead(branchName string, remoteURL s
 	cremoteURL := C.CString(remoteURL)
 	defer C.free(unsafe.Pointer(cremoteURL))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_annotated_commit
 	ret := C.git_annotated_commit_from_fetchhead(&ptr, r.ptr, cbranchName, cremoteURL, oid.toC())
@@ -65,8 +69,10 @@ func (r *Repository) AnnotatedCommitFromFetchHead(branchName string, remoteURL s
 }
 
 func (r *Repository) LookupAnnotatedCommit(oid *Oid) (*AnnotatedCommit, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_annotated_commit
 	ret := C.git_annotated_commit_lookup(&ptr, r.ptr, oid.toC())
@@ -81,8 +87,10 @@ func (r *Repository) LookupAnnotatedCommit(oid *Oid) (*AnnotatedCommit, error) {
 }
 
 func (r *Repository) AnnotatedCommitFromRef(ref *Reference) (*AnnotatedCommit, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_annotated_commit
 	ret := C.git_annotated_commit_from_ref(&ptr, r.ptr, ref.ptr)
@@ -101,8 +109,10 @@ func (r *Repository) AnnotatedCommitFromRevspec(spec string) (*AnnotatedCommit, 
 	crevspec := C.CString(spec)
 	defer C.free(unsafe.Pointer(crevspec))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var ptr *C.git_annotated_commit
 	ret := C.git_annotated_commit_from_revspec(&ptr, r.ptr, crevspec)
@@ -161,8 +171,10 @@ func mergeOptionsFromC(opts *C.git_merge_options) MergeOptions {
 func DefaultMergeOptions() (MergeOptions, error) {
 	opts := C.git_merge_options{}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ecode := C.git_merge_options_init(&opts, C.GIT_MERGE_OPTIONS_VERSION)
 	if ecode < 0 {
@@ -197,8 +209,10 @@ const (
 )
 
 func (r *Repository) Merge(theirHeads []*AnnotatedCommit, mergeOptions *MergeOptions, checkoutOptions *CheckoutOptions) error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var err error
 	cMergeOpts := populateMergeOptions(&C.git_merge_options{}, mergeOptions)
@@ -244,8 +258,10 @@ const (
 // a 'git-merge' command. There may be multiple answers, so the first
 // return value is a bitmask of MergeAnalysis values.
 func (r *Repository) MergeAnalysis(theirHeads []*AnnotatedCommit) (MergeAnalysis, MergePreference, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	gmerge_head_array := make([]*C.git_annotated_commit, len(theirHeads))
 	for i := 0; i < len(theirHeads); i++ {
@@ -264,8 +280,10 @@ func (r *Repository) MergeAnalysis(theirHeads []*AnnotatedCommit) (MergeAnalysis
 }
 
 func (r *Repository) MergeCommits(ours *Commit, theirs *Commit, options *MergeOptions) (*Index, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	copts := populateMergeOptions(&C.git_merge_options{}, options)
 	defer freeMergeOptions(copts)
@@ -282,8 +300,10 @@ func (r *Repository) MergeCommits(ours *Commit, theirs *Commit, options *MergeOp
 }
 
 func (r *Repository) MergeTrees(ancestor *Tree, ours *Tree, theirs *Tree, options *MergeOptions) (*Index, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	copts := populateMergeOptions(&C.git_merge_options{}, options)
 	defer freeMergeOptions(copts)
@@ -305,8 +325,10 @@ func (r *Repository) MergeTrees(ancestor *Tree, ours *Tree, theirs *Tree, option
 }
 
 func (r *Repository) MergeBase(one *Oid, two *Oid) (*Oid, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var oid C.git_oid
 	ret := C.git_merge_base(&oid, r.ptr, one.toC(), two.toC())
@@ -324,8 +346,10 @@ func (r *Repository) MergeBase(one *Oid, two *Oid) (*Oid, error) {
 // If none are found, an empty slice is returned and the error is set
 // approprately
 func (r *Repository) MergeBases(one, two *Oid) ([]*Oid, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var coids C.git_oidarray
 	ret := C.git_merge_bases(&coids, r.ptr, one.toC(), two.toC())
@@ -358,8 +382,10 @@ func (r *Repository) MergeBaseMany(oids []*Oid) (*Oid, error) {
 		coids[i] = *oids[i].toC()
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var oid C.git_oid
 	ret := C.git_merge_base_many(&oid, r.ptr, C.size_t(len(oids)), &coids[0])
@@ -378,8 +404,10 @@ func (r *Repository) MergeBasesMany(oids []*Oid) ([]*Oid, error) {
 		inCoids[i] = *oids[i].toC()
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var outCoids C.git_oidarray
 	ret := C.git_merge_bases_many(&outCoids, r.ptr, C.size_t(len(oids)), &inCoids[0])
@@ -411,8 +439,10 @@ func (r *Repository) MergeBaseOctopus(oids []*Oid) (*Oid, error) {
 		coids[i] = *oids[i].toC()
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var oid C.git_oid
 	ret := C.git_merge_base_octopus(&oid, r.ptr, C.size_t(len(oids)), &coids[0])
@@ -573,8 +603,10 @@ func MergeFile(ancestor MergeFileInput, ours MergeFileInput, theirs MergeFileInp
 		defer freeMergeFileOptions(copts)
 	}
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	var result C.git_merge_file_result
 	ecode := C._go_git_merge_file(&result,

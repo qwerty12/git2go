@@ -13,8 +13,10 @@ func (v *Repository) AddIgnoreRule(rules string) error {
 	crules := C.CString(rules)
 	defer C.free(unsafe.Pointer(crules))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_ignore_add_rule(v.ptr, crules)
 	runtime.KeepAlive(v)
@@ -25,8 +27,10 @@ func (v *Repository) AddIgnoreRule(rules string) error {
 }
 
 func (v *Repository) ClearInternalIgnoreRules() error {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_ignore_clear_internal_rules(v.ptr)
 	runtime.KeepAlive(v)
@@ -42,8 +46,10 @@ func (v *Repository) IsPathIgnored(path string) (bool, error) {
 	cpath := C.CString(path)
 	defer C.free(unsafe.Pointer(cpath))
 
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
+	if shouldCallLockOSThread() {
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+	}
 
 	ret := C.git_ignore_path_is_ignored(&ignored, v.ptr, cpath)
 	runtime.KeepAlive(v)
