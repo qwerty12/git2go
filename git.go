@@ -129,14 +129,19 @@ var (
 // future field additions to make them non-comparable.
 type doNotCompare [0]func()
 
+type InitOptions struct {
+	DoNotCheckThreading  bool
+	DoNotRegisterHttp    bool
+	DoNotRegisterSsh     bool
+}
+
+var lastInitOptions *InitOptions
+
 var pointerHandles *HandleList
 var remotePointers *remotePointerList
 
-func init() {
-	initLibGit2()
-}
-
-func initLibGit2() {
+func InitLibGit2(initOpts *InitOptions) {
+	lastInitOptions = initOpts // obviously, this isn't intended to be thread-safe
 	pointerHandles = NewHandleList()
 	remotePointers = newRemotePointerList()
 
@@ -148,10 +153,11 @@ func initLibGit2() {
 	// with multi-threading support. The most likely outcome is a segfault
 	// or panic at an incomprehensible time, so let's make it easy by
 	// panicking right here.
-	if features&FeatureThreads == 0 {
+	if !initOpts.DoNotCheckThreading && features&FeatureThreads == 0 {
 		panic("libgit2 was not built with threading support")
 	}
 
+	if !initOpts.DoNotRegisterHttp {
 	if features&FeatureHTTPS == 0 {
 		if err := registerManagedHTTP(); err != nil {
 			panic(err)
@@ -163,7 +169,8 @@ func initLibGit2() {
 		// they're the only ones setting it up.
 		C.git_openssl_set_locking()
 	}
-	if features&FeatureSSH == 0 {
+	}
+	if !initOpts.DoNotRegisterSsh && features&FeatureSSH == 0 {
 		if err := registerManagedSSH(); err != nil {
 			panic(err)
 		}
@@ -190,7 +197,7 @@ func Shutdown() {
 // before any other functions are called.
 func ReInit() {
 	Shutdown()
-	initLibGit2()
+	InitLibGit2(lastInitOptions)
 }
 
 // Oid represents the id for a Git object.
