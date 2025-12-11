@@ -133,6 +133,7 @@ type InitOptions struct {
 	DoNotCheckThreading  bool
 	DoNotRegisterHttp    bool
 	DoNotRegisterSsh     bool
+	AvoidMmapPackWindows bool
 }
 
 var lastInitOptions *InitOptions
@@ -147,14 +148,16 @@ func InitLibGit2(initOpts *InitOptions) {
 
 	C.git_libgit2_init()
 
-	// Mitigation for SIGBUS crashes during packfile access:
-	// avoid using mmap-backed pack windows by default. This forces libgit2
-	// to use read-based I/O so that concurrent truncation or replacement of
-	// packfiles results in regular I/O errors instead of kernel SIGBUS.
-	// Applications that want mmap performance can override these at runtime
-	// via SetMwindowSize/SetMwindowMappedLimit.
-	_ = SetMwindowSize(0)
-	_ = SetMwindowMappedLimit(0)
+	if initOpts.AvoidMmapPackWindows {
+		// Mitigation for SIGBUS crashes during packfile access:
+		// avoid using mmap-backed pack windows by default. This forces libgit2
+		// to use read-based I/O so that concurrent truncation or replacement of
+		// packfiles results in regular I/O errors instead of kernel SIGBUS.
+		// Applications that want mmap performance can override these at runtime
+		// via SetMwindowSize/SetMwindowMappedLimit.
+		_ = SetMwindowSize(0)
+		_ = SetMwindowMappedLimit(0)
+	}
 
 	features := Features()
 
