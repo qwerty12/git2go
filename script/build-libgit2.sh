@@ -62,7 +62,7 @@ else
 fi
 
 BUILD_TYPE="RelWithDebInfo"
-USE_THREADS="ON"
+USE_THREADS="OFF"
 USE_BUNDLED_ZLIB="ON"
 if [ "${USE_CHROMIUM_ZLIB}" = "ON" ]; then
 	USE_BUNDLED_ZLIB="Chromium"
